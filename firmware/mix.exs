@@ -39,6 +39,7 @@ defmodule Firmware.MixProject do
       {:shoehorn, "~> 0.4"},
       {:ring_logger, "~> 0.6"},
       {:toolshed, "~> 0.2"},
+      {:whos_at_the_door, path: "../whos_at_the_door"},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.6", targets: @all_targets},
@@ -51,7 +52,7 @@ defmodule Firmware.MixProject do
       {:nerves_system_rpi3, "~> 1.6", runtime: false, targets: :rpi3},
       {:nerves_system_rpi3a, "~> 1.6", runtime: false, targets: :rpi3a},
       {:nerves_system_bbb, "~> 2.0", runtime: false, targets: :bbb},
-      {:nerves_system_x86_64, "~> 1.6", runtime: false, targets: :x86_64},
+      {:nerves_system_x86_64, "~> 1.6", runtime: false, targets: :x86_64}
     ]
   end
 end
