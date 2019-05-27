@@ -50,7 +50,7 @@ defmodule WhosAtTheDoor do
     Digital.set_pin_mode(state.led_pin, :output)
     led_off(state)
     RGBLCD.initialize()
-    display_waiting_message()
+    display_waiting_message(state)
     {:noreply, state}
   end
 
@@ -72,25 +72,22 @@ defmodule WhosAtTheDoor do
   @impl true
   def handle_info({_pin, :pressed, _value}, state) do
     armed? = !state.armed?
+    Logger.info("Pressed. armed?: #{armed?}")
 
     case armed? do
       true ->
         display_armed_message()
 
       false ->
-        display_waiting_message()
-        led_off(state)
+        display_waiting_message(state)
     end
-
-    Logger.info("Pressed. armed?: #{armed?}")
 
     {:noreply, %{state | armed?: armed?}}
   end
 
   @impl true
   def handle_info(:reset_greeting, state) do
-    led_off(state)
-    display_waiting_message()
+    display_waiting_message(state)
     {:noreply, %{state | greeting: false}}
   end
 
@@ -112,12 +109,14 @@ defmodule WhosAtTheDoor do
     state
   end
 
-  defp display_intruder_message() do
+  defp display_intruder_message(state) do
+    led_on(state)
     RGBLCD.set_rgb(255, 0, 0)
     RGBLCD.set_text("Intruder alert!")
   end
 
-  defp display_waiting_message() do
+  defp display_waiting_message(state) do
+    led_off(state)
     RGBLCD.set_color_white()
     RGBLCD.set_text("Waiting for a")
     RGBLCD.set_cursor(1, 0)
@@ -127,12 +126,12 @@ defmodule WhosAtTheDoor do
   defp in_range?(value) when value < 100, do: true
   defp in_range?(_value), do: false
 
-  defp led_on(state) do
-    GrovePi.Digital.write(state.led_pin, 1)
-  end
-
   defp led_off(state) do
     GrovePi.Digital.write(state.led_pin, 0)
+  end
+
+  defp led_on(state) do
+    GrovePi.Digital.write(state.led_pin, 1)
   end
 
   defp log_distance(value) do
@@ -143,7 +142,7 @@ defmodule WhosAtTheDoor do
 
   defp maybe_greet_visitor(%{greeting: false, armed?: false} = state) do
     schedule_greeting_reset()
-    Logger.info("Greeat visitor")
+    Logger.info("Greet visitor")
 
     state
     |> update_greeting_and_visits()
@@ -154,8 +153,7 @@ defmodule WhosAtTheDoor do
 
   defp maybe_sound_alarm(%{armed?: true} = state) do
     Logger.info("Sound alarm!!")
-    led_on(state)
-    display_intruder_message()
+    display_intruder_message(state)
     Buzzer.buzz(state.buzzer_pin, @one_second)
     state
   end
