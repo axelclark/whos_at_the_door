@@ -47,8 +47,7 @@ defmodule WhosAtTheDoor do
   def handle_continue(:start_and_subscribe, state) do
     Ultrasonic.subscribe(state.ultrasonic_pin, :changed)
     Button.subscribe(state.button_pin, :pressed)
-    Digital.set_pin_mode(state.led_pin, :output)
-    led_off(state)
+    setup_led_pin(state)
     RGBLCD.initialize()
     display_waiting_message(state)
     {:noreply, state}
@@ -74,12 +73,10 @@ defmodule WhosAtTheDoor do
     armed? = !state.armed?
     Logger.info("Pressed. armed?: #{armed?}")
 
-    case armed? do
-      true ->
-        display_armed_message()
-
-      false ->
-        display_waiting_message(state)
+    if armed? do
+      display_armed_message()
+    else
+      display_waiting_message(state)
     end
 
     {:noreply, %{state | armed?: armed?}}
@@ -141,8 +138,8 @@ defmodule WhosAtTheDoor do
   end
 
   defp maybe_greet_visitor(%{greeting: false, armed?: false} = state) do
-    schedule_greeting_reset()
     Logger.info("Greet visitor")
+    schedule_greeting_reset()
 
     state
     |> update_greeting_and_visits()
@@ -162,6 +159,11 @@ defmodule WhosAtTheDoor do
 
   defp schedule_greeting_reset() do
     Process.send_after(self(), :reset_greeting, @five_seconds)
+  end
+
+  defp setup_led_pin(state) do
+    Digital.set_pin_mode(state.led_pin, :output)
+    led_off(state)
   end
 
   defp ultrasonic_distance(value) when is_integer(value) do
