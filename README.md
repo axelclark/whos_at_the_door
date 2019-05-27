@@ -15,6 +15,7 @@ On the GrovePi+ or GrovePi Zero, connect the following devices:
   * RGB LCD display:  IC2-1 port
 
 This project was created as a Nerves app. To start your Nerves app:
+  * Change into the firmware directory `cd firmware`
   * `export MIX_TARGET=my_target` or prefix every command with `export MIX_TARGET=my_target`, Example: `export MIX_TARGET=rpi3`
   * Install dependencies with `mix deps.get`
   * Create firmware with `mix firmware`
